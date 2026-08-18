@@ -33,15 +33,9 @@ app.add_middleware(
 )
 
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
-if FRONTEND_DIR.exists():
-    app.mount("/app", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
 @app.get("/", include_in_schema=False)
 async def root_redirect():
-    return RedirectResponse(url="/app/")
-
-@app.get("/app", include_in_schema=False)
-async def app_redirect():
     return RedirectResponse(url="/app/")
 
 
@@ -397,6 +391,10 @@ async def chat_dual(request: ChatRequest):
         "protected": protected_res
     }
 
+
+# Mount static files LAST — must be registered after all API routes
+if FRONTEND_DIR.exists():
+    app.mount("/app", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
